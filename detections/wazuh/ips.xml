@@ -1,0 +1,8 @@
+<group name="pfa,ids,ips,">
+  <rule id="100110" level="10">
+    <if_sid>86601</if_sid>
+    <field name="alert.action">^blocked$</field>
+    <description>Suricata IPS blocked a matching network request: $(alert.signature)</description>
+    <group>network_block,</group>
+  </rule>
+</group>

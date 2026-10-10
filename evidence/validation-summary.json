@@ -1,0 +1,184 @@
+{
+  "description": "Sanitized historical observations, not a claim about current VM state.",
+  "recorded_run": "e5ef821f0b56",
+  "source_directory": "Original private deployment/results/purple-e5ef821f0b56",
+  "redactions": [
+    "public IPs",
+    "URLs",
+    "raw logs",
+    "user device details"
+  ],
+  "detection_request": {
+    "timestamp": "2026-09-27T18:19:18.3566472Z",
+    "http_status": "404",
+    "curl_exit": 0,
+    "pass": true
+  },
+  "prevention_request": {
+    "timestamp": "2026-09-27T18:19:47.5487055Z",
+    "http_status": "000",
+    "curl_exit": 28,
+    "pass": true
+  },
+  "normal_traffic_after_response": {
+    "http_status": "200",
+    "exit": 0,
+    "pass": true
+  },
+  "suricata_events": [
+    {
+      "timestamp": "2026-09-27T18:19:17.859137+0000",
+      "kind": "web_probe",
+      "signature_id": 1000003,
+      "action": "allowed"
+    },
+    {
+      "timestamp": "2026-09-27T18:19:39.305369+0000",
+      "kind": "web_probe",
+      "signature_id": 1000003,
+      "action": "blocked"
+    }
+  ],
+  "wazuh_events": [
+    {
+      "timestamp": "2026-09-27T18:19:11.423+0000",
+      "kind": "file_integrity",
+      "rule": "554",
+      "level": 5,
+      "signature_id": null,
+      "action": null
+    },
+    {
+      "timestamp": "2026-09-27T18:19:16.425+0000",
+      "kind": "file_integrity",
+      "rule": "550",
+      "level": 7,
+      "signature_id": null,
+      "action": null
+    },
+    {
+      "timestamp": "2026-09-27T18:19:18.393+0000",
+      "kind": "web_probe",
+      "rule": "86601",
+      "level": 3,
+      "signature_id": "1000003",
+      "action": "allowed"
+    },
+    {
+      "timestamp": "2026-09-27T18:19:18.403+0000",
+      "kind": "privilege_boundary",
+      "rule": "100121",
+      "level": 6,
+      "signature_id": null,
+      "action": null
+    },
+    {
+      "timestamp": "2026-09-27T18:19:18.421+0000",
+      "kind": "invalid_ssh_user",
+      "rule": "5710",
+      "level": 5,
+      "signature_id": null,
+      "action": null
+    },
+    {
+      "timestamp": "2026-09-27T18:19:18.423+0000",
+      "kind": "invalid_ssh_user",
+      "rule": "5710",
+      "level": 5,
+      "signature_id": null,
+      "action": null
+    },
+    {
+      "timestamp": "2026-09-27T18:19:40.394+0000",
+      "kind": "web_probe",
+      "rule": "100110",
+      "level": 10,
+      "signature_id": "1000003",
+      "action": "blocked"
+    }
+  ],
+  "host_tests": [
+    {
+      "test": "bounded_discovery",
+      "port": 22,
+      "reachable": false,
+      "expected_reachable": false
+    },
+    {
+      "test": "bounded_discovery",
+      "port": 443,
+      "reachable": false,
+      "expected_reachable": false
+    },
+    {
+      "test": "bounded_discovery",
+      "port": 1514,
+      "reachable": true,
+      "expected_reachable": true
+    },
+    {
+      "test": "bounded_discovery",
+      "port": 1515,
+      "reachable": true,
+      "expected_reachable": true
+    },
+    {
+      "test": "bounded_discovery",
+      "port": 5601,
+      "reachable": false,
+      "expected_reachable": false
+    },
+    {
+      "test": "bounded_discovery",
+      "port": 9200,
+      "reachable": false,
+      "expected_reachable": false
+    },
+    {
+      "test": "file_tamper",
+      "action": "created_then_modified"
+    },
+    {
+      "test": "privilege_boundary",
+      "exit": 1,
+      "denied": true
+    }
+  ],
+  "original_ips_http_tests": [
+    {
+      "test": "normal-before",
+      "http_status": "200",
+      "curl_exit": 0,
+      "pass": true,
+      "timestamp": "2026-09-14T13:07:55.4147837+01:00"
+    },
+    {
+      "test": "blocked-http",
+      "http_status": "000",
+      "curl_exit": 28,
+      "pass": true,
+      "timestamp": "2026-09-14T13:08:03.4880868+01:00"
+    },
+    {
+      "test": "blocked-https",
+      "http_status": "000",
+      "curl_exit": 28,
+      "pass": true,
+      "timestamp": "2026-09-14T13:08:11.5849210+01:00"
+    },
+    {
+      "test": "normal-after",
+      "http_status": "200",
+      "curl_exit": 0,
+      "pass": true,
+      "timestamp": "2026-09-14T13:08:11.9159245+01:00"
+    },
+    {
+      "test": "iam-discovery",
+      "http_status": "200",
+      "curl_exit": 0,
+      "pass": true,
+      "timestamp": "2026-09-14T13:08:12.8398996+01:00"
+    }
+  ]
+}

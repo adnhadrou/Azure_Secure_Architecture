@@ -1,0 +1,27 @@
+name: Validate portfolio sources
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate JSON, XML, Python, links and publication checks
+        run: python tools/validate_repo.py
+      - name: Test evidence selection with synthetic mixed logs
+        run: python -m unittest discover -s tools -p 'test_*.py' -v
+      - name: Check Bash syntax without running installers
+        run: |
+          for file in scripts/linux/*.sh; do
+            bash -n "$file"
+          done
+      - name: Check PowerShell syntax without running deployments
+        shell: pwsh
+        run: ./tools/Test-PowerShellSyntax.ps1

@@ -1,0 +1,8 @@
+{
+  "servicesPublicIp": "203.0.113.10",
+  "siemPublicIp": "203.0.113.20",
+  "appBaseUrl": "https://app.203.0.113.10.sslip.io",
+  "sshUser": "labadmin",
+  "sshKeyPath": ".local/keys/lab_ed25519",
+  "knownHostsPath": ".local/keys/known_hosts"
+}

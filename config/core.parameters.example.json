@@ -1,0 +1,10 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": { "value": "swedencentral" },
+    "adminSource": { "value": "203.0.113.5/32" },
+    "sshPublicKey": { "value": "<YOUR_GENERATED_SSH_PUBLIC_KEY>" },
+    "shutdownTime": { "value": "1900" }
+  }
+}

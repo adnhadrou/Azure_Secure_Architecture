@@ -1,0 +1,655 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminSource": {
+      "type": "string"
+    },
+    "sshPublicKey": {
+      "type": "string"
+    },
+    "windowsAdminPassword": {
+      "type": "secureString",
+      "minLength": 16
+    },
+    "domainLocation": {
+      "type": "string",
+      "defaultValue": "spaincentral",
+      "metadata": {
+        "description": "Choose a permitted region with sufficient subscription quota."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-11-01",
+      "name": "nsg-pfa-dc",
+      "location": "[parameters('domainLocation')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "admin-access",
+            "properties": {
+              "priority": 100,
+              "direction": "Inbound",
+              "sourceAddressPrefix": "[parameters('adminSource')]",
+              "destinationAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRange": "22"
+            }
+          },
+          {
+            "name": "package-updates",
+            "properties": {
+              "priority": 100,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "80",
+                "443"
+              ]
+            }
+          },
+          {
+            "name": "azure-dns",
+            "properties": {
+              "priority": 110,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "168.63.129.16",
+              "sourcePortRange": "*",
+              "protocol": "*",
+              "access": "Allow",
+              "destinationPortRange": "53"
+            }
+          },
+          {
+            "name": "azure-agent",
+            "properties": {
+              "priority": 120,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "168.63.129.16",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "80",
+                "32526"
+              ]
+            }
+          },
+          {
+            "name": "time-sync",
+            "properties": {
+              "priority": 130,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "sourcePortRange": "*",
+              "protocol": "Udp",
+              "access": "Allow",
+              "destinationPortRange": "123"
+            }
+          },
+          {
+            "name": "wazuh-agent",
+            "properties": {
+              "priority": 140,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "10.0.5.10",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "1514",
+                "1515"
+              ]
+            }
+          },
+          {
+            "name": "deny-unlisted-inbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Inbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "*",
+              "access": "Deny",
+              "destinationPortRange": "*"
+            }
+          },
+          {
+            "name": "deny-unlisted-outbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "*",
+              "access": "Deny",
+              "destinationPortRange": "*"
+            }
+          },
+          {
+            "name": "domain-member-tcp",
+            "properties": {
+              "priority": 200,
+              "direction": "Inbound",
+              "sourceAddressPrefix": "10.1.3.10",
+              "destinationAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "53",
+                "88",
+                "135",
+                "389",
+                "445",
+                "464",
+                "636",
+                "3268",
+                "3269",
+                "49152-65535"
+              ]
+            }
+          },
+          {
+            "name": "domain-member-udp",
+            "properties": {
+              "priority": 210,
+              "direction": "Inbound",
+              "sourceAddressPrefix": "10.1.3.10",
+              "destinationAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "Udp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "53",
+                "88",
+                "123",
+                "389",
+                "464"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2023-11-01",
+      "name": "pip-vm-pfa-dc",
+      "location": "[parameters('domainLocation')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2023-11-01",
+      "name": "nic-vm-pfa-dc",
+      "location": "[parameters('domainLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses','pip-vm-pfa-dc')]",
+        "[resourceId('Microsoft.Network/virtualNetworks','vnet-pfa-domain')]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "primary",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.1.4.10",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets','vnet-pfa-domain','snet-mgmt')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses','pip-vm-pfa-dc')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2024-03-01",
+      "name": "vm-pfa-dc",
+      "location": "[parameters('domainLocation')]",
+      "tags": {
+        "project": "PFA",
+        "purpose": "temporary-demo",
+        "role": "dc"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces','nic-vm-pfa-dc')]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_B2as_v2"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "Canonical",
+            "offer": "0001-com-ubuntu-server-jammy",
+            "sku": "22_04-lts-gen2",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osdisk-vm-pfa-dc",
+            "createOption": "FromImage",
+            "diskSizeGB": 64,
+            "managedDisk": {
+              "storageAccountType": "StandardSSD_LRS"
+            },
+            "deleteOption": "Delete"
+          }
+        },
+        "osProfile": {
+          "computerName": "pfa-dc",
+          "adminUsername": "labadmin",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "provisionVMAgent": true,
+            "ssh": {
+              "publicKeys": [
+                {
+                  "path": "/home/labadmin/.ssh/authorized_keys",
+                  "keyData": "[parameters('sshPublicKey')]"
+                }
+              ]
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces','nic-vm-pfa-dc')]",
+              "properties": {
+                "deleteOption": "Delete"
+              }
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-11-01",
+      "name": "nsg-pfa-windows",
+      "location": "[parameters('domainLocation')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "admin-access",
+            "properties": {
+              "priority": 100,
+              "direction": "Inbound",
+              "sourceAddressPrefix": "[parameters('adminSource')]",
+              "destinationAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRange": "3389"
+            }
+          },
+          {
+            "name": "package-updates",
+            "properties": {
+              "priority": 100,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "80",
+                "443"
+              ]
+            }
+          },
+          {
+            "name": "azure-dns",
+            "properties": {
+              "priority": 110,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "168.63.129.16",
+              "sourcePortRange": "*",
+              "protocol": "*",
+              "access": "Allow",
+              "destinationPortRange": "53"
+            }
+          },
+          {
+            "name": "azure-agent",
+            "properties": {
+              "priority": 120,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "168.63.129.16",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "80",
+                "32526"
+              ]
+            }
+          },
+          {
+            "name": "time-sync",
+            "properties": {
+              "priority": 130,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "sourcePortRange": "*",
+              "protocol": "Udp",
+              "access": "Allow",
+              "destinationPortRange": "123"
+            }
+          },
+          {
+            "name": "wazuh-agent",
+            "properties": {
+              "priority": 140,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "10.0.5.10",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "1514",
+                "1515"
+              ]
+            }
+          },
+          {
+            "name": "deny-unlisted-inbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Inbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "*",
+              "access": "Deny",
+              "destinationPortRange": "*"
+            }
+          },
+          {
+            "name": "deny-unlisted-outbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "*",
+              "access": "Deny",
+              "destinationPortRange": "*"
+            }
+          },
+          {
+            "name": "domain-controller-tcp",
+            "properties": {
+              "priority": 200,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "10.1.4.10",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "53",
+                "88",
+                "135",
+                "389",
+                "445",
+                "464",
+                "636",
+                "3268",
+                "3269",
+                "49152-65535"
+              ]
+            }
+          },
+          {
+            "name": "domain-controller-udp",
+            "properties": {
+              "priority": 210,
+              "direction": "Outbound",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "10.1.4.10",
+              "sourcePortRange": "*",
+              "protocol": "Udp",
+              "access": "Allow",
+              "destinationPortRanges": [
+                "53",
+                "88",
+                "123",
+                "389",
+                "464"
+              ]
+            }
+          },
+          {
+            "name": "admin-iis-demo",
+            "properties": {
+              "priority": 110,
+              "direction": "Inbound",
+              "sourceAddressPrefix": "[parameters('adminSource')]",
+              "destinationAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "protocol": "Tcp",
+              "access": "Allow",
+              "destinationPortRange": "80"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2023-11-01",
+      "name": "pip-vm-pfa-windows",
+      "location": "[parameters('domainLocation')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2023-11-01",
+      "name": "nic-vm-pfa-windows",
+      "location": "[parameters('domainLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses','pip-vm-pfa-windows')]",
+        "[resourceId('Microsoft.Network/virtualNetworks','vnet-pfa-domain')]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "primary",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.1.3.10",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets','vnet-pfa-domain','snet-servers')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses','pip-vm-pfa-windows')]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [
+            "10.1.4.10"
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2024-03-01",
+      "name": "vm-pfa-windows",
+      "location": "[parameters('domainLocation')]",
+      "tags": {
+        "project": "PFA",
+        "purpose": "temporary-demo",
+        "role": "windows"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces','nic-vm-pfa-windows')]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_B2as_v2"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2022-datacenter-g2",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osdisk-vm-pfa-windows",
+            "createOption": "FromImage",
+            "diskSizeGB": 128,
+            "managedDisk": {
+              "storageAccountType": "StandardSSD_LRS"
+            },
+            "deleteOption": "Delete"
+          }
+        },
+        "osProfile": {
+          "computerName": "pfa-win",
+          "adminUsername": "pfaadmin",
+          "adminPassword": "[parameters('windowsAdminPassword')]",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces','nic-vm-pfa-windows')]",
+              "properties": {
+                "deleteOption": "Delete"
+              }
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2023-11-01",
+      "name": "vnet-pfa-domain",
+      "location": "[parameters('domainLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups','nsg-pfa-dc')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups','nsg-pfa-windows')]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.1.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "snet-mgmt",
+            "properties": {
+              "addressPrefix": "10.1.4.0/24",
+              "defaultOutboundAccess": false,
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups','nsg-pfa-dc')]"
+              }
+            }
+          },
+          {
+            "name": "snet-servers",
+            "properties": {
+              "addressPrefix": "10.1.3.0/24",
+              "defaultOutboundAccess": false,
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups','nsg-pfa-windows')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "apiVersion": "2023-11-01",
+      "name": "vnet-pfa/to-domain",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks','vnet-pfa-domain')]"
+      ],
+      "properties": {
+        "remoteVirtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks','vnet-pfa-domain')]"
+        },
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": false,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": false
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "apiVersion": "2023-11-01",
+      "name": "vnet-pfa-domain/to-core",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks','vnet-pfa-domain')]"
+      ],
+      "properties": {
+        "remoteVirtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks','vnet-pfa')]"
+        },
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": false,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<group name="pfa,purple_team,pam,">
+  <rule id="100121" level="6">
+    <decoded_as>pam</decoded_as>
+    <match type="pcre2">pam_unix\(sudo:auth\): auth could not identify password for \[pfa-app\]</match>
+    <description>PFA application account: non-interactive sudo authentication denied</description>
+    <group>authentication_failed,</group>
+  </rule>
+</group>

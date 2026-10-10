@@ -1,0 +1,14 @@
+<group name="pfa,">
+  <rule id="100100" level="3">
+    <decoded_as>json</decoded_as><field name="pfa_event">^login_success$</field>
+    <description>PFA application: successful authorized login</description>
+  </rule>
+  <rule id="100101" level="8">
+    <decoded_as>json</decoded_as><field name="pfa_event">^access_denied$</field>
+    <description>PFA application: authenticated user denied by role policy</description>
+  </rule>
+  <rule id="100102" level="5">
+    <decoded_as>json</decoded_as><field name="pfa_event">^response_test$</field>
+    <description>PFA controlled response exercise (synthetic event)</description>
+  </rule>
+</group>

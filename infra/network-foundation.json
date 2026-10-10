@@ -1,0 +1,342 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-11-01",
+      "name": "nsg-pfa-dmz",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "PFA",
+        "purpose": "temporary-demo"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "deny-unlisted-inbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Inbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "deny-unlisted-outbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Outbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-11-01",
+      "name": "nsg-pfa-users",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "PFA",
+        "purpose": "temporary-demo"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "deny-unlisted-inbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Inbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "deny-unlisted-outbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Outbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-11-01",
+      "name": "nsg-pfa-servers",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "PFA",
+        "purpose": "temporary-demo"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "deny-unlisted-inbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Inbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "deny-unlisted-outbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Outbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-11-01",
+      "name": "nsg-pfa-mgmt",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "PFA",
+        "purpose": "temporary-demo"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "deny-unlisted-inbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Inbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "deny-unlisted-outbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Outbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-11-01",
+      "name": "nsg-pfa-monitor",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "PFA",
+        "purpose": "temporary-demo"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "deny-unlisted-inbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Inbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "deny-unlisted-outbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Outbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-11-01",
+      "name": "nsg-pfa-test",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "PFA",
+        "purpose": "temporary-demo"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "deny-unlisted-inbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Inbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "deny-unlisted-outbound",
+            "properties": {
+              "priority": 4096,
+              "direction": "Outbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2023-11-01",
+      "name": "vnet-pfa",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "PFA",
+        "purpose": "temporary-demo"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-dmz')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-users')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-servers')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-mgmt')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-monitor')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-test')]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.0.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "snet-dmz",
+            "properties": {
+              "addressPrefix": "10.0.1.0/24",
+              "defaultOutboundAccess": false,
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-dmz')]"
+              }
+            }
+          },
+          {
+            "name": "snet-users",
+            "properties": {
+              "addressPrefix": "10.0.2.0/24",
+              "defaultOutboundAccess": false,
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-users')]"
+              }
+            }
+          },
+          {
+            "name": "snet-servers",
+            "properties": {
+              "addressPrefix": "10.0.3.0/24",
+              "defaultOutboundAccess": false,
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-servers')]"
+              }
+            }
+          },
+          {
+            "name": "snet-mgmt",
+            "properties": {
+              "addressPrefix": "10.0.4.0/24",
+              "defaultOutboundAccess": false,
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-mgmt')]"
+              }
+            }
+          },
+          {
+            "name": "snet-monitor",
+            "properties": {
+              "addressPrefix": "10.0.5.0/24",
+              "defaultOutboundAccess": false,
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-monitor')]"
+              }
+            }
+          },
+          {
+            "name": "snet-test",
+            "properties": {
+              "addressPrefix": "10.0.6.0/24",
+              "defaultOutboundAccess": false,
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg-pfa-test')]"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Choose a permitted region with sufficient subscription quota."
+      }
+    }
+  }
+}
